@@ -149,6 +149,22 @@ async fn test_f32_divide() {
 }
 
 #[tokio::test]
+async fn test_f64_pow() {
+    let mut pc = ProgramTest::new("spl_math", id(), processor!(process_instruction));
+
+    pc.set_bpf_compute_max_units(30_000);
+
+    let (mut banks_client, payer, recent_blockhash) = pc.start().await;
+
+    let mut transaction = Transaction::new_with_payer(
+        &[instruction::f64_pow(50_f64, 10.5_f64)],
+        Some(&payer.pubkey()),
+    );
+    transaction.sign(&[&payer], recent_blockhash);
+    banks_client.process_transaction(transaction).await.unwrap();
+}
+
+#[tokio::test]
 async fn test_noop() {
     let mut pc = ProgramTest::new("spl_math", id(), processor!(process_instruction));
 
