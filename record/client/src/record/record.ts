@@ -32,8 +32,6 @@ import {
   WriteArgs, 
   SetAuthorityArgs, 
   CloseAccountArgs,
-  InitializeDynamicArgs,
-  WriteDynamicArgs,
 } from './instructions';
 import { RecordData, Data } from './models';
 import { RECORD_SCHEMA } from './schema';
@@ -42,7 +40,7 @@ const _debug = false; // flag
 
 // Account Seeds
 export function getAccountSeed(seed: string, unique?: boolean) {
-  return seed + unique ? Date.now().toString(): null;
+  return seed += unique ? Date.now().toString(): '';
 };
 
 export const ACCOUNT_SEED = getAccountSeed('spl_record_program');
@@ -69,6 +67,7 @@ export async function create(
   payerPublicKey: PublicKey,
   authorityPublicKey: PublicKey,
   signers: Signer[],
+  seed: string,
   programId: PublicKey,
   connection: Connection,
 ): Promise<[PublicKey, RecordData | null]> {
@@ -77,7 +76,7 @@ export async function create(
   // Get Account
   const [accountPublicKey, account] = await getAccountWithSeed(
     payerPublicKey,
-    ACCOUNT_SEED!,
+    seed,
     programId,
     connection)
   
@@ -97,27 +96,27 @@ export async function create(
       RECORD_ACCOUNT_SIZE,
     );
 
-    // TODO: Build Transaction
+    // Build Transaction
     const transaction = new Transaction().add(
 
-      // TODO: Instruction: Create Account 
+      // Instruction: Create Account 
       SystemProgram.createAccountWithSeed({
         fromPubkey: payerPublicKey,
         basePubkey: authorityPublicKey,
-        seed: ACCOUNT_SEED!,
+        seed: seed!,
         newAccountPubkey: accountPublicKey,
         lamports,
         space: RECORD_ACCOUNT_SIZE!,
         programId,
       }),
 
-      // TODO:Instruction: Initialize Account      
+      // Instruction: Initialize Account      
       initializeInstruction(
         accountPublicKey,        
         authorityPublicKey,                                  
         programId),       
 
-      // TODO: Instruction: Write
+      // Instruction: Write
       writeInstruction(
         accountPublicKey, 
         authorityPublicKey,
@@ -136,6 +135,8 @@ export async function create(
       transaction, 
       [...signers]
     );
+
+    // print transaction url - 
     printTransactionURL(txid, connection); // prints transaction url to console
 
     if (_debug) { await getParsedTransaction(txid, connection);}            
@@ -211,7 +212,7 @@ export async function update(
     // Create Transaction. Add Instructions.    
     const transaction = new Transaction().add(      
 
-      // TODO: Instruction: Write
+      // Instruction: Write
       writeInstruction(        
         accountPublicKey, 
         authorityPublicKey,
@@ -294,7 +295,7 @@ export async function setAuthority(
     // Create Transaction. Add Instructions.    
     const transaction = new Transaction().add(      
 
-      // TODO: Instruction: Write
+      // Instruction: Write
       setAuthorityInstruction(        
         accountPublicKey, 
         authorityPublicKey,
@@ -374,7 +375,7 @@ export async function closeAccount(
     // Create Transaction. Add Instructions.    
     const transaction = new Transaction().add(      
 
-      // TODO: Instruction: Write
+      // Instruction: Write
       closeAccountInstruction(        
         accountPublicKey,       // account to close
         authorityPublicKey,     // authority on account
@@ -394,7 +395,7 @@ export async function closeAccount(
     
     accountUpdated = await connection.getAccountInfo(accountPublicKey);
 
-    // TODO: account should be null if closed? 
+    // account should be null if closed?
     if (accountUpdated === null) {
       if (_debug) {
         console.log(`\n${ConsoleUtils.CONSOLE_COLOR_GREEN_PREP}`, 
@@ -412,9 +413,9 @@ export async function closeAccount(
   return false;  // could not find account
 };
 
-/// TODO: Instructions: -----------------------------------------------
+/// Instructions Implementation: -------------------------------
 
-/// TODO: Instruction: Record program: Initialize
+/// Instruction: Record program: Initialize
 export function initializeInstruction(    
     account: PublicKey,
     authority: PublicKey,
@@ -541,7 +542,7 @@ export function closeAccountInstruction(
   })   
 };
 
-// TODO: Utility: ------------------------------------------
+// Utilities: ------------------------------------------
 
 /// Decode Record Account Data
 export const decodeRecordAccountData = (buffer: Buffer): RecordData => {
@@ -564,8 +565,8 @@ export function getDefaultRecordData() {
 };
 
 
-// // -------------------------------------------------------
-// // TODO: MISC: VERBOSE LOGGING
+// -------------------------------------------------------
+// MISC: VERBOSE LOGGING ~ test chunk output
 function VerboseAccountLogging(
   payer: PublicKey,
   authority: PublicKey,
@@ -584,13 +585,13 @@ function VerboseAccountLogging(
                 `\naccount owner: ${account?.owner}`,
                 `\nauthority: ${payer}`);
 
-    // TODO: Examples: alts to print a public key
+    // Examples: alts to print a public key ~ how many ways 
     // console.log(`\nauthority raw data: `, recordData!.authority);
     // console.log(`\nauthority formatted $: ${recordData!.authority}`);
     // console.log(`\nauthority toBase58(): `, recordData!.authority.toBase58());
     console.log(`\nauthority toString(): `, AfterRecordData!.authority.toString());
 
-    // TODO: Validate some data:    
+    // Validate some data:    
     console.log(`\nAuthority Compare:`, 
                 `\nBefore: `, payer.toBase58(),
                 `\nAfter : `, AfterRecordData?.authority!.toBase58());

@@ -1,4 +1,3 @@
-// TODO: misc utils:FgRed = "\x1b[31m"
 export const CONSOLE_COLOR_GREEN = `\x1b[32m`;
 export const CONSOLE_COLOR_RED = `\x1b[32m`;
 export const CONSOLE_COLOR_YELLOW = `\x1b[33m`;

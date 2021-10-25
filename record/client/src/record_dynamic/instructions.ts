@@ -2,22 +2,21 @@
 import { PublicKey, Connection, TransactionInstruction } from '@solana/web3.js';
 import BN from 'bn.js';
 import { deserializeUnchecked, serialize, Schema } from 'borsh';
-import '../utils/borsh_ext'
+import '../utils/borsh_ext' // extend borsh with pubkey
 import {
     RecordInstruction,
-} from "../record/instructions";
+} from '../record/instructions';
 import {     
     RECORD_SCHEMA,
   } from '../record/schema';
 const _debug = false;
 
-/// ----------------------------------------------------------------
-/// TODO: DYNAMIC RECORD ACCOUNT IMPLEMENTATION
+
+/// Instruction Arguments Dynamic Record Data
 export class InitializeDynamicArgs {
     instruction: RecordInstruction = RecordInstruction.InitializeDynamic;
 }
 
-// TODO:
 export class WriteDynamicArgs {
     instruction: RecordInstruction = RecordInstruction.WriteDynamic;
     offset: BN;
@@ -33,7 +32,7 @@ export class WriteDynamicArgs {
 
 /// Instructions  -----------------------------------------------------
 
-/// TODO: Instruction: Record program: Initialize
+/// Instruction: Record program: Initialize
 export function initializeDynamicInstruction(    
     account: PublicKey,
     authority: PublicKey,
@@ -48,7 +47,7 @@ export function initializeDynamicInstruction(
     ]
   
     // Define instruction arguments
-    const args = new InitializeDynamicArgs()
+    const args = new InitializeDynamicArgs();
     const data = Buffer.from(serialize(RECORD_SCHEMA, args))  
   
     // Build return instruction
@@ -87,7 +86,7 @@ export function initializeDynamicInstruction(
       console.log(`\nWriteArgs: `, args, `\n`);
     }
   
-    // // Serialize data
+    // Serialize data
     const ser_data = Buffer.from(serialize(RECORD_SCHEMA, args));        
   
     if (_debug) {

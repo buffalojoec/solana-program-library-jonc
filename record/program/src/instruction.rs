@@ -48,6 +48,28 @@ pub enum RecordInstruction {
     /// 1. `[signer]` Record authority
     /// 2. `[]` Receiver of account lamports
     CloseAccount,
+
+    //----------------------------------------------------
+    /// Create a new Dynamic record (bytes, anything)
+    ///
+    /// Accounts expected by this instruction:
+    ///
+    /// 0. `[writable]` Record account, must be uninitialized
+    /// 1. `[]` Record authority
+    InitializeDynamic,
+
+    /// Write to the provided record account
+    ///
+    /// Accounts expected by this instruction:
+    ///
+    /// 0. `[writable]` Record account, must be previously initialized
+    /// 1. `[signer]` Current record authority
+    WriteDynamic {
+        /// Offset to start writing record, expressed as `u64`.
+        offset: u64,
+        /// Data to replace the existing record data
+        data: Vec<u8>,
+    },
 }
 
 /// Create a `RecordInstruction::Initialize` instruction
@@ -100,6 +122,37 @@ pub fn close_account(record_account: &Pubkey, signer: &Pubkey, receiver: &Pubkey
             AccountMeta::new(*record_account, false),
             AccountMeta::new_readonly(*signer, true),
             AccountMeta::new(*receiver, false),
+        ],
+    )
+}
+
+// ----------------------------------------------------------------------------------
+// Dynamic Implementation: Save anything
+/// Create a `RecordInstruction::InitializeDynamic` instruction
+pub fn initialize_dynamic(record_account: &Pubkey, authority: &Pubkey) -> Instruction {
+    Instruction::new_with_borsh(
+        id(),
+        &RecordInstruction::InitializeDynamic,
+        vec![
+            AccountMeta::new(*record_account, false),
+            AccountMeta::new_readonly(*authority, false),
+        ],
+    )
+}
+
+/// Create a `RecordInstruction::WriteDynamic` instruction
+pub fn write_dynamic(
+    record_account: &Pubkey, 
+    signer: &Pubkey, 
+    offset: u64, 
+    data: Vec<u8>
+) -> Instruction {    
+    Instruction::new_with_borsh(
+        id(),        
+        &RecordInstruction::WriteDynamic { offset, data },
+        vec![
+            AccountMeta::new(*record_account, false),
+            AccountMeta::new_readonly(*signer, true),
         ],
     )
 }

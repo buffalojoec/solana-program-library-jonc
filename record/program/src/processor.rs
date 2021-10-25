@@ -4,7 +4,12 @@ use {
     crate::{
         error::RecordError,
         instruction::RecordInstruction,
-        state::{Data, RecordData},
+        state::{
+            Data, 
+            RecordData,
+            RecordDataDynamic,
+            write_data,
+        },
     },
     borsh::{BorshDeserialize, BorshSerialize},
     solana_program::{
@@ -12,8 +17,8 @@ use {
         entrypoint::ProgramResult,
         msg,
         program_error::ProgramError,
-        program_pack::IsInitialized,
-        pubkey::Pubkey,
+        program_pack::{IsInitialized, Pack, Sealed},
+        pubkey::Pubkey,        
     },
 };
 
@@ -116,6 +121,43 @@ pub fn process_instruction(
             account_data
                 .serialize(&mut *data_info.data.borrow_mut())
                 .map_err(|e| e.into())
+        }
+        
+        // -----------------------------------------------------------------
+        // Record Dynamic implementation
+        RecordInstruction::InitializeDynamic => {
+            msg!("\nRecordInstruction::InitializeDynamic");
+
+            let data_info = next_account_info(account_info_iter)?;
+            let authority_info = next_account_info(account_info_iter)?;                       
+            let mut account_data = RecordDataDynamic::unpack_from_slice(&data_info.data.borrow())?;
+
+            if account_data.is_initialized() {
+                msg!("init: Record account already initialized");
+                return Err(ProgramError::AccountAlreadyInitialized);
+            }            
+
+            // Serialize initial data (authority and current version)
+            account_data.authority = *authority_info.key;            
+            account_data.version = RecordDataDynamic::CURRENT_VERSION;                        
+            account_data.pack_into_slice(&mut data_info.data.borrow_mut());
+            Ok(())
+        }
+        
+        RecordInstruction::WriteDynamic { offset, data } => {
+            msg!("\nRecordInstruction::WriteDynamic\n");            
+            let data_info = next_account_info(account_info_iter)?;
+            let authority_info = next_account_info(account_info_iter)?;           
+            let account_data = RecordDataDynamic::unpack_from_slice(&data_info.data.borrow())?;
+            if !account_data.is_initialized() {
+                msg!("write: Record account not initialized");
+                return Err(ProgramError::UninitializedAccount);
+            }
+            
+            check_authority(authority_info, &account_data.authority)?;            
+            write_data(data_info, &data, RecordDataDynamic::LEN + offset as usize);
+
+            Ok(())
         }
     }
 }

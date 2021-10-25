@@ -16,9 +16,9 @@ import {
   AccountInfo,
   ParsedConfirmedTransaction } from '@solana/web3.js';
 
-// TODO: Extract: ------------------------------------------------------------
-//
-// TODO: IMPLEMENT: DELETE | CLOSE | UPDATE AUTHORITY | OTHER?
+/**
+ * returns a parsed transaction from a transaction id (signature)
+ */
 export async function getParsedTransaction(
   txid: string, 
   connection: Connection
@@ -29,7 +29,9 @@ export async function getParsedTransaction(
     return parsed_transaction;
 };
 
-// TODO: getTransactionURL (TODO:cluster)
+/**
+ * return a transaction url - TODO: hardcoded to localhost
+ */
 export const printTransactionURL = (txid: String, connection: Connection): String => {  
   
   // "devnet" | "testnet" | "" (mainnet) | localhost = customUrl=http%3A%2F%2Flocalhost%3A8899  
@@ -40,6 +42,9 @@ export const printTransactionURL = (txid: String, connection: Connection): Strin
   return url;
 };
 
+/**
+ * get an account from the base, seed, and programId
+ */
 export async function getAccountWithSeed(
   base: PublicKey, 
   seed: string, 
@@ -58,9 +63,10 @@ export async function getAccountWithSeed(
   const account = await connection.getAccountInfo(accountPublicKey);     
   return [accountPublicKey, account];
 };
-// EXTRACT
-// --------------------------------------------------------------
 
+/**
+ * return a newly funded keypair 
+ */
 export async function newAccountWithLamports(
   connection: Connection,
   lamports = 1000000,
@@ -75,9 +81,57 @@ export async function newAccountWithLamports(
 }
 
 /**
+ * assert equal for BN
+ */
+export function deepStrictEqualBN(decodedData: object, expectedData: object) {
+  /**
+   * Helper function to do deep equality check because BNs are not equal.
+   * TODO: write this function recursively. For now, sufficient.
+   */
+  for (const key in decodedData) {
+    if (expectedData[key] instanceof BN) {
+      assert.ok(expectedData[key].eq(decodedData[key]));
+    } else {
+      if (decodedData[key] instanceof Object) {
+        for (const subkey in decodedData[key]) {
+          if (decodedData[key][subkey] instanceof Object) {
+            if (decodedData[key][subkey] instanceof BN) {
+              assert.ok(decodedData[key][subkey].eq(expectedData[key][subkey]));
+            } else {
+              for (const subsubkey in decodedData[key][subkey]) {
+                console.log(decodedData[key][subkey][subsubkey]);
+                if (decodedData[key][subkey][subsubkey] instanceof BN) {
+                  assert.ok(
+                    decodedData[key][subkey][subsubkey].eq(
+                      expectedData[key][subkey][subsubkey],
+                    ),
+                  );
+                } else {
+                  assert.deepStrictEqual(
+                    expectedData[key][subkey][subsubkey],
+                    decodedData[key][subkey][subsubkey],
+                  );
+                }
+              }
+            }
+          } else {
+            assert.strictEqual(
+              decodedData[key][subkey],
+              expectedData[key][subkey],
+            );
+          }
+        }
+      } else {
+        assert.strictEqual(decodedData[key], expectedData[key]);
+      }
+    }
+  }
+}
+
+/**
  * @private
  */
-async function getConfig(): Promise<any> {
+ async function getConfig(): Promise<any> {
   // Path to Solana CLI config file
   const CONFIG_FILE_PATH = path.resolve(
     os.homedir(),
@@ -131,51 +185,4 @@ export async function createKeypairFromFile(
   const secretKeyString = await fs.readFile(filePath, {encoding: 'utf8'});
   const secretKey = Uint8Array.from(JSON.parse(secretKeyString));
   return Keypair.fromSecretKey(secretKey);
-}
-
-// TODO: testing:
-// TODO: TEST UTILS
-export function deepStrictEqualBN(decodedData: object, expectedData: object) {
-  /**
-   * Helper function to do deep equality check because BNs are not equal.
-   * TODO: write this function recursively. For now, sufficient.
-   */
-  for (const key in decodedData) {
-    if (expectedData[key] instanceof BN) {
-      assert.ok(expectedData[key].eq(decodedData[key]));
-    } else {
-      if (decodedData[key] instanceof Object) {
-        for (const subkey in decodedData[key]) {
-          if (decodedData[key][subkey] instanceof Object) {
-            if (decodedData[key][subkey] instanceof BN) {
-              assert.ok(decodedData[key][subkey].eq(expectedData[key][subkey]));
-            } else {
-              for (const subsubkey in decodedData[key][subkey]) {
-                console.log(decodedData[key][subkey][subsubkey]);
-                if (decodedData[key][subkey][subsubkey] instanceof BN) {
-                  assert.ok(
-                    decodedData[key][subkey][subsubkey].eq(
-                      expectedData[key][subkey][subsubkey],
-                    ),
-                  );
-                } else {
-                  assert.deepStrictEqual(
-                    expectedData[key][subkey][subsubkey],
-                    decodedData[key][subkey][subsubkey],
-                  );
-                }
-              }
-            }
-          } else {
-            assert.strictEqual(
-              decodedData[key][subkey],
-              expectedData[key][subkey],
-            );
-          }
-        }
-      } else {
-        assert.strictEqual(decodedData[key], expectedData[key]);
-      }
-    }
-  }
 }

@@ -14,7 +14,6 @@ import {
 
 import fs from 'mz/fs';
 import path from 'path';
-// import { KeyPairSyncResult } from 'crypto';
 
 /**
  * Path to program files
@@ -58,6 +57,7 @@ export async function checkProgram(
 
     // Check if the program has been deployed    
     const programInfo = await connection.getAccountInfo(programId);
+    console.log(`\nUsing program ${programId.toBase58()}`); 
     if (programInfo === null) {
         if (fs.existsSync(programSoPath)) {
         throw new Error(
@@ -68,8 +68,7 @@ export async function checkProgram(
         }
     } else if (!programInfo.executable) {
         throw new Error(`Program is not executable`);
-    } 
-    console.log(`\nUsing program ${programId.toBase58()}`);      
+    }          
     return programId;
 }
 
@@ -123,11 +122,10 @@ export async function requestAirdropForNewAcount(
 ): Promise<void> {
     let fees = 0;  
   
-    // TODO: establish payer
+    // establish payer & acount size
     if (payerPublicKey && accountSize) {        
         const {feeCalculator} = await connection.getRecentBlockhash();
-
-        // TODO: calculating program size
+    
         // Calculate the cost to fund the greeter account
         fees += await connection.getMinimumBalanceForRentExemption(accountSize);    
     

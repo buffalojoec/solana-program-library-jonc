@@ -1,6 +1,6 @@
 import { PublicKey } from '@solana/web3.js';
 
-// TODO: RecordData class for reading Record Program Account Data
+// RecordData class for reading Record Program Account Data
 export class Data {
   
     /// The account allowed to update the data
@@ -18,7 +18,7 @@ export class Data {
     }
   }
   
-  // TODO: RecordData class for reading Record Program Account Data
+  // RecordData class for reading Record Program Account Data
   // This class is used to deserialized, in this case fix length data
   export class RecordData {
     /// Struct version, allows for upgrades to the program
@@ -41,6 +41,7 @@ export class Data {
     }
 
     /// Formatted version of the data  
+    // @ts-ignore
     get dataFormatted() {
         return Buffer.from(this.data).toString();
     }

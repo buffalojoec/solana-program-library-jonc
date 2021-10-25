@@ -1,7 +1,13 @@
 //! Program state
 use {
     borsh::{BorshDeserialize, BorshSchema, BorshSerialize},
-    solana_program::{program_pack::IsInitialized, pubkey::Pubkey},
+    solana_program::{
+        program_pack::{IsInitialized, Pack, Sealed},
+        pubkey::Pubkey,
+        account_info::AccountInfo,
+        program_error::ProgramError,
+        msg,
+    },
 };
 
 /// Struct wrapping data and providing metadata
@@ -42,6 +48,54 @@ impl IsInitialized for RecordData {
     fn is_initialized(&self) -> bool {
         self.version == Self::CURRENT_VERSION
     }
+}
+
+// ------------------------------------------------------------------
+// Dynamic Implementation
+/// Struct wrapping data and providing metadata
+#[derive(Clone, Debug, BorshSerialize, BorshDeserialize, BorshSchema, PartialEq)]
+pub struct RecordDataDynamic {
+    /// Struct version, allows for upgrades to the program
+    pub version: u8,
+
+    /// The account allowed to update the data
+    pub authority: Pubkey,
+}
+
+impl RecordDataDynamic {
+    /// Version to fill in on new created accounts
+    pub const CURRENT_VERSION: u8 = 5;
+}
+
+impl Sealed for RecordDataDynamic {}
+
+impl Pack for RecordDataDynamic {
+    const LEN: usize = 33;
+
+    fn pack_into_slice(&self, dst: &mut [u8]) {
+        let mut slice = dst;
+        self.serialize(&mut slice).unwrap()
+    }
+
+    fn unpack_from_slice(src: &[u8]) -> Result<Self, ProgramError> {
+        let mut p = src;
+        RecordDataDynamic::deserialize(&mut p).map_err(|_| {
+            msg!("Failed to deserialize record");
+            ProgramError::InvalidAccountData
+        })
+    }    
+}
+
+impl IsInitialized for RecordDataDynamic {
+    fn is_initialized(&self) -> bool {
+        self.version == Self::CURRENT_VERSION
+    }
+}
+
+/// Write data to the specified account
+pub fn write_data(account: &AccountInfo, data: &[u8], offset: usize) {
+    let mut account_data = account.data.borrow_mut();    
+    account_data[offset..offset + data.len()].copy_from_slice(data);
 }
 
 #[cfg(test)]

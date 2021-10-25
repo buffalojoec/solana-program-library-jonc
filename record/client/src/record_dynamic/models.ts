@@ -3,10 +3,11 @@ import BN from 'bn.js';
 import { deserializeUnchecked, serialize, Schema } from 'borsh';
 import '../utils/borsh_ext'
 
-// Account header size.
+// Account header size. (referenced from dynamic header/writable index length)
+// this is where internal writing stops and our dynamic store begins
 export const HEADER_LENGTH = 33;
 
-// TODO: DynamicRecordTest
+/// SimpleRecord /w key and string for testing dynamic record store
 export class SimpleRecord {
     key: Uint8Array;
     message: string;
@@ -43,14 +44,14 @@ export class SimpleRecord {
       let res: SimpleRecord = deserializeUnchecked(
         this.schema,
         SimpleRecord,
-        recordAccount.data.slice(HEADER_LENGTH)  // TODO: replace with record header len const
+        recordAccount.data.slice(HEADER_LENGTH)
       );
   
       return res;
     }
   }
 
-// TODO: RecordDynamicTestMeta
+// Meta data - extended dynamic data test
 export class MetaData {
   parentKey: Uint8Array;
   name: string;

@@ -3,13 +3,17 @@ import {
   WriteArgs,
   SetAuthorityArgs,
   CloseAccountArgs,
+} from './instructions';
+
+import { 
   InitializeDynamicArgs,
   WriteDynamicArgs,
-} from './instructions';
+} from '../record_dynamic/instructions';
+
 import { RecordData } from './models';
 
-// TODO: DEFINE META DATA : FOR TRANSACTION INSTRUCTIONS, & GETs | SERIALIZE & DESERIALIZE
-// TODO: Define all objects for serializing and deserializing to/from program
+// DEFINE META DATA : FOR TRANSACTION INSTRUCTIONS, & GETs | SERIALIZE & DESERIALIZE
+// Define all objects for serializing and deserializing to/from program
 export const RECORD_SCHEMA = new Map<any, any>([    
   [
     InitializeArgs, // -> serialize
@@ -25,7 +29,7 @@ export const RECORD_SCHEMA = new Map<any, any>([
         fields: [
           ['instruction', 'u8'],       
           ['offset', 'u64'],          
-          ['data', 'string'],     // borsh adds length automatically
+          ['data', 'string'],     // borsh adds length automatically ~ notes
                                   // if string + 32
                                   // if using fixed size [32]
                                   // add length manually before
