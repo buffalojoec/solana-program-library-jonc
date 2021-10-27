@@ -1,5 +1,5 @@
 import { PublicKey, Connection } from '@solana/web3.js';
-import BN from 'bn.js';  
+import BN from 'bn.js';
 import { deserializeUnchecked, serialize, Schema } from 'borsh';
 import '../utils/borsh_ext'
 
@@ -11,7 +11,7 @@ export const HEADER_LENGTH = 33;
 export class SimpleRecord {
     key: Uint8Array;
     message: string;
-  
+
     static schema: Schema = new Map([
       [
         SimpleRecord,
@@ -28,8 +28,8 @@ export class SimpleRecord {
       this.key = obj.key;
       this.message = obj.message;
     }
-  
-    public static async getAccountData(    
+
+    public static async getAccountData(
       accountPublicKey: PublicKey,
       connection: Connection,
     ): Promise<SimpleRecord> {
@@ -40,18 +40,21 @@ export class SimpleRecord {
       if (!recordAccount) {
         throw new Error('Account not found');
       }
-  
+
       let res: SimpleRecord = deserializeUnchecked(
         this.schema,
         SimpleRecord,
         recordAccount.data.slice(HEADER_LENGTH)
       );
-  
+
       return res;
     }
   }
 
 // Meta data - extended dynamic data test
+// perhaps making a comment here to the effect of:
+// if you are working with a dynamic type created by you, you would customize a
+// type like this to contain the data format expected by your dapp
 export class MetaData {
   parentKey: Uint8Array;
   name: string;
@@ -61,7 +64,7 @@ export class MetaData {
   amount: BN;
   shares: Number;
 
-  constructor(obj: { 
+  constructor(obj: {
     parentKey: Uint8Array;
     name: string;
     description: string;
@@ -71,9 +74,9 @@ export class MetaData {
     shares: Number;
   }) {
     this.parentKey = obj.parentKey;
-    this.name = obj.name;    
-    this.description = obj.description;    
-    this.uri = obj.uri;    
+    this.name = obj.name;
+    this.description = obj.description;
+    this.uri = obj.uri;
     this.isMutable = obj.isMutable;
     this.amount = obj.amount;
     this.shares = obj.shares;
@@ -99,7 +102,7 @@ export class MetaData {
 
   public static async getAccountData(
     accountPublicKey: PublicKey,
-    connection: Connection,    
+    connection: Connection,
   ): Promise<MetaData> {
     let recordAccount = await connection.getAccountInfo(
       accountPublicKey,

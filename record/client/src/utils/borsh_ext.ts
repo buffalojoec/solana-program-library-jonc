@@ -4,6 +4,7 @@ import { BinaryReader, BinaryWriter } from 'borsh';
 /**
  * extend borsh to include pubkey
  */
+// bummer, the normal addition of `PublicKey` as a borsh type isn't good enough here?
 export const extendBorsh = () => {
   (BinaryReader.prototype as any).readPubkey = function () {
     const reader = this as unknown as BinaryReader;

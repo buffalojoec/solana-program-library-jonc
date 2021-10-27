@@ -55,3 +55,5 @@ jobs:
 
       - name: Build and test
         run: ./ci/cargo-test-bpf.sh record
+
+        # Please add the full run to CI too!
