@@ -5,19 +5,25 @@
 
 solana_ver=$1
 if [[ -z $solana_ver ]]; then
-  echo "Usage: $0 <new-solana-version>"
+  echo "Usage: $0 <new-solana-version> [<update-directory>]"
   exit 1
 fi
 
-cd "$(dirname "$0")"
+base_dir="$(dirname "$0")"
+update_dir=$2
+if [[ -z $update_dir ]]; then
+  update_dir=$base_dir
+fi
+
+cd "$base_dir"
 source ./ci/solana-version.sh
 old_solana_ver=${solana_version#v}
 
-sed -i'' -e "s#solana_version=v.*#solana_version=v${solana_ver}#" ./ci/solana-version.sh
-sed -i'' -e "s#solana_version = \".*\"#solana_version = \"${solana_ver}\"#" ./Anchor.toml
+sed -i'' -e "s#solana_version=v.*#solana_version=v${solana_ver}#" "$update_dir"/ci/solana-version.sh
+sed -i'' -e "s#solana_version = \".*\"#solana_version = \"${solana_ver}\"#" "$update_dir"/Anchor.toml
 
 declare tomls=()
-while IFS='' read -r line; do tomls+=("$line"); done < <(find . -name Cargo.toml)
+while IFS='' read -r line; do tomls+=("$line"); done < <(find "$update_dir" -name Cargo.toml)
 
 crates=(
   solana-account-decoder
