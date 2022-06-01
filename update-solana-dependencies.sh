@@ -35,6 +35,7 @@ crates=(
   solana-cli-output
   solana-client
   solana-core
+  solana-faucet
   solana-logger
   solana-notifier
   solana-program
@@ -52,5 +53,5 @@ crates=(
 
 set -x
 for crate in "${crates[@]}"; do
-  sed -E -i'' -e "s:(${crate} = \")(=?)${old_solana_ver}\".*:\1\2${solana_ver}\":" "${tomls[@]}"
+  sed -E -i'' -e "s:(${crate}\s*=\s*\")(=?)[^\"]*\".*:\1\2${solana_ver}\":" "${tomls[@]}"
 done
