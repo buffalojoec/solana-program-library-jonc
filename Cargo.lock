@@ -6502,6 +6502,7 @@ name = "spl-token-client"
 version = "0.5.0"
 dependencies = [
  "async-trait",
+ "futures 0.3.21",
  "solana-cli-output",
  "solana-client",
  "solana-program-test",
@@ -6647,7 +6648,6 @@ dependencies = [
  "num-traits",
  "num_enum",
  "solana-program",
- "solana-sdk",
  "spl-tlv-account-resolution",
  "spl-type-length-value",
  "thiserror",
